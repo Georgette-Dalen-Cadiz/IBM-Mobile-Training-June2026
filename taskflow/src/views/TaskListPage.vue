@@ -1,98 +1,98 @@
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Tasks</ion-title>
+      <ion-toolbar class="minimal-toolbar">
+        <ion-title class="minimal-title">Tasks</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
-      <!-- Progress Summary -->
-      <div class="summary-section" v-if="totalCount > 0">
-        <ion-text color="medium">
-          <p class="summary-text">{{ doneCount }} of {{ totalCount }} completed</p>
-        </ion-text>
-        <ion-progress-bar
-          :value="totalCount ? doneCount / totalCount : 0"
-          color="primary"
-          class="slim-progress"
+    <ion-content color="light">      
+      <template v-if="!isDetailRoute">
+        <div class="summary-section" v-if="totalCount > 0">
+          <div class="summary-header">
+            <span class="summary-label">Progress</span>
+            <ion-text color="medium">
+              <p class="summary-text">{{ doneCount }} of {{ totalCount }} completed</p>
+            </ion-text>
+          </div>
+          <ion-progress-bar
+            :value="totalCount ? doneCount / totalCount : 0"
+            color="dark"
+            class="slim-progress"
+          />
+        </div>
+
+        <ion-list v-if="tasks.length > 0" inset="true" lines="inset" class="minimal-list">
+          <ion-item-sliding v-for="task in tasks" :key="task.id" class="minimal-sliding-item">
+            <ion-item @click="goToDetail(task.id)" button detail="false" class="minimal-item">
+              
+              <ion-checkbox
+                :checked="task.done"
+                @ionChange="toggleTask(task.id)"
+                @click.stop
+                slot="start"
+                class="minimal-checkbox"
+                color="dark"
+              />
+              
+              <ion-label :class="{ done: task.done }" class="task-label">
+                {{ task.name }}
+              </ion-label>
+            </ion-item>
+
+            <ion-item-options side="end">
+              <ion-item-option color="danger" class="minimal-delete-option" @click="removeTask(task.id)">
+                <ion-icon :icon="trashOutline" slot="icon-only" />
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+
+        <div v-else class="empty-state">
+          <ion-icon :icon="clipboardOutline" class="empty-icon"></ion-icon>
+          <ion-text color="medium">
+            <p>No tasks yet.</p>
+          </ion-text>
+        </div>
+
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+          <ion-fab-button @click="openAddPrompt" color="dark" class="minimal-fab">
+            <ion-icon :icon="addOutline" />
+          </ion-fab-button>
+        </ion-fab>
+
+        <ion-alert
+          :is-open="isAlertOpen"
+          header="New Task"
+          css-class="minimal-alert"
+          :inputs="[{ name: 'taskName', type: 'text', placeholder: 'What needs to be done?' }]"
+          :buttons="[
+            { text: 'Cancel', role: 'cancel' },
+            {
+              text: 'Save',
+              cssClass: 'alert-button-confirm',
+              handler: (data) => {
+                if (data.taskName && data.taskName.trim()) {
+                  addTask(data.taskName.trim());
+                }
+              },
+            },
+          ]"
+          @didDismiss="isAlertOpen = false"
         />
-      </div>
+      </template>
 
-      <!-- Task List with Swipe-to-Delete -->
-      <ion-list v-if="tasks.length > 0" lines="full" class="ion-margin-top">
-        <ion-item-sliding v-for="task in tasks" :key="task.id">
-          <ion-item>
-            <ion-checkbox
-              :checked="task.done"
-              @ionChange="toggleTask(task.id)"
-              slot="start"
-              class="minimal-checkbox"
-            />
-            <ion-label :class="{ done: task.done }">
-              {{ task.name }}
-            </ion-label>
-          </ion-item>
-
-          <ion-item-options side="end">
-            <ion-item-option color="danger" @click="removeTask(task.id)">
-              <ion-icon :icon="trashOutline" slot="icon-only" />
-            </ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      </ion-list>
-
-      <!-- Clean Empty State -->
-      <div v-else class="empty-state">
-        <ion-text color="medium">
-          <p>No tasks yet.</p>
-        </ion-text>
-      </div>
-
-      <!-- Single, prominent FAB -->
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button @click="openAddPrompt" color="dark">
-          <ion-icon :icon="addOutline" />
-        </ion-fab-button>
-      </ion-fab>
-
-      <!-- Alert for adding task -->
-      <ion-alert
-        :is-open="isAlertOpen"
-        header="New Task"
-        :inputs="[
-          {
-            name: 'taskName',
-            type: 'text',
-            placeholder: 'What needs to be done?'
-          }
-        ]"
-        :buttons="[
-          {
-            text: 'Cancel',
-            role: 'cancel'
-          },
-          {
-            text: 'Save',
-            handler: (data) => {
-              if (data.taskName && data.taskName.trim()) {
-                addTask(data.taskName.trim())
-              }
-            }
-          }
-        ]"
-        @didDismiss="isAlertOpen = false"
-      />
+      <ion-router-outlet v-else />
     </ion-content>
   </ion-page>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useTaskStore } from '@/stores/taskStore'
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useTaskStore } from '@/stores/taskStore';
 
-// Ionic components
 import {
   IonPage,
   IonHeader,
@@ -112,81 +112,119 @@ import {
   IonFab,
   IonFabButton,
   IonAlert,
-} from '@ionic/vue'
+  IonRouterOutlet,
+} from '@ionic/vue';
 
-// Icons
-import {
-  trashOutline,
-  addOutline,
-} from 'ionicons/icons'
+import { trashOutline, addOutline, clipboardOutline } from 'ionicons/icons';
 
-const taskStore = useTaskStore()
-const { tasks, doneCount, totalCount } = storeToRefs(taskStore)
-const { addTask, toggleTask, removeTask } = taskStore
+const router = useRouter();
+const route = useRoute();
+const taskStore = useTaskStore();
+const { tasks, doneCount, totalCount } = storeToRefs(taskStore);
+const { addTask, toggleTask, removeTask } = taskStore;
 
-const isAlertOpen = ref(false)
+const isAlertOpen = ref(false);
+const isDetailRoute = computed(() => route.params.tid !== undefined);
 
 function openAddPrompt() {
-  isAlertOpen.value = true
+  isAlertOpen.value = true;
+}
+
+function goToDetail(taskId) {
+  router.push(`/tabs/tasks/${taskId}`);
 }
 </script>
 
 <style scoped>
-/* Header */
-ion-toolbar {
-  --padding-top: 10px;
-  --padding-bottom: 10px;
+.minimal-toolbar {
+  --background: transparent;
 }
-ion-title {
+.minimal-title {
   font-weight: 600;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
-/* Summary Section */
 .summary-section {
-  padding: 16px 24px 0;
+  padding: 24px 20px 8px 20px;
+}
+.summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.summary-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #222222;
+  letter-spacing: -0.01em;
 }
 .summary-text {
-  margin: 0 0 8px 0;
-  font-size: 14px;
+  margin: 0;
+  font-size: 0.8rem;
   font-weight: 500;
+  letter-spacing: 0.01em;
 }
 .slim-progress {
-  height: 4px;
-  border-radius: 4px;
-  opacity: 0.8;
+  height: 3px;
+  border-radius: 8px;
+  --background: rgba(0, 0, 0, 0.05);
 }
 
-/* List & Items */
-ion-item {
-  --padding-start: 24px;
-  --padding-end: 24px;
-  --min-height: 60px;
-  --border-color: var(--ion-color-step-100, #f4f5f8);
+.minimal-list {
+  margin-top: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
+.minimal-item {
+  --padding-top: 10px;
+  --padding-bottom: 10px;
+  --min-height: 56px;
+}
+.task-label {
+  font-weight: 500;
+  color: #333333;
+  transition: color 0.25s ease;
+}
+
 .minimal-checkbox {
-  margin-right: 16px;
+  margin-right: 12px;
   --size: 20px;
+  --border-radius: 6px;
+  --border-width: 1.5px;
 }
 .done {
   text-decoration: line-through;
-  color: var(--ion-color-medium);
-  transition: all 0.3s ease;
+  color: #aaaaaa;
+  opacity: 0.7;
 }
 
-/* Empty State */
+.minimal-delete-option {
+  font-size: 20px;
+}
+
 .empty-state {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
   height: 50vh;
-  font-size: 16px;
-  letter-spacing: -0.3px;
+  text-align: center;
+}
+.empty-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+.empty-state p {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
 }
 
-/* FAB */
-ion-fab-button {
+.minimal-fab {
   margin: 16px;
-  --box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08); 
+  --border-radius: 16px; 
 }
 </style>

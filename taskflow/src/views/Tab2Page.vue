@@ -1,45 +1,48 @@
 <template>
   <ion-page>
     <ion-header class="ion-no-border">
-      <ion-toolbar>
-        <ion-title>Settings</ion-title>
+      <ion-toolbar class="minimal-toolbar">
+        <ion-title class="minimal-title">Settings</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content color="light">
       
       <div class="section-title">App Preferences</div>
-      <ion-list inset="true" class="settings-list">
-        <ion-item lines="full">
-          <ion-icon :icon="moonOutline" slot="start" class="icon-bg bg-dark" />
-          <ion-label>Dark Mode</ion-label>
-          <ion-toggle slot="end" :checked="false"></ion-toggle>
+      <ion-list inset="true" lines="inset" class="minimal-list">
+        <ion-item class="minimal-item">
+          <ion-icon :icon="moonOutline" slot="start" class="settings-icon" />
+          <ion-label class="settings-label">Dark Mode</ion-label>
+          <ion-toggle slot="end" color="dark" :checked="false"></ion-toggle>
         </ion-item>
-        <ion-item lines="none">
-          <ion-icon :icon="notificationsOutline" slot="start" class="icon-bg bg-primary" />
-          <ion-label>Push Notifications</ion-label>
-          <ion-toggle slot="end" :checked="true"></ion-toggle>
+        
+        <ion-item class="minimal-item">
+          <ion-icon :icon="notificationsOutline" slot="start" class="settings-icon" />
+          <ion-label class="settings-label">Push Notifications</ion-label>
+          <ion-toggle slot="end" color="dark" :checked="true"></ion-toggle>
         </ion-item>
       </ion-list>
 
       <div class="section-title">Data & Sync</div>
-      <ion-list inset="true" class="settings-list">
-        <ion-item button detail="true" lines="full">
-          <ion-icon :icon="cloudUploadOutline" slot="start" class="icon-bg bg-success" />
-          <ion-label>Backup Data</ion-label>
+      <ion-list inset="true" lines="inset" class="minimal-list">
+        <ion-item button detail="true" class="minimal-item">
+          <ion-icon :icon="cloudUploadOutline" slot="start" class="settings-icon" />
+          <ion-label class="settings-label">Backup Data</ion-label>
         </ion-item>
-        <ion-item button detail="true" lines="none">
-          <ion-icon :icon="trashBinOutline" slot="start" class="icon-bg bg-danger" />
-          <ion-label color="danger">Clear All Tasks</ion-label>
+        
+        <!-- Destructive action kept clean but visually distinct -->
+        <ion-item button detail="true" class="minimal-item danger-item">
+          <ion-icon :icon="trashBinOutline" slot="start" class="settings-icon" />
+          <ion-label class="settings-label">Clear All Tasks</ion-label>
         </ion-item>
       </ion-list>
 
       <div class="section-title">About</div>
-      <ion-list inset="true" class="settings-list">
-        <ion-item button detail="true" lines="none">
-          <ion-icon :icon="informationCircleOutline" slot="start" class="icon-bg bg-medium" />
-          <ion-label>Version Info</ion-label>
-          <ion-note slot="end">v1.0.0</ion-note>
+      <ion-list inset="true" lines="none" class="minimal-list">
+        <ion-item class="minimal-item">
+          <ion-icon :icon="informationCircleOutline" slot="start" class="settings-icon" />
+          <ion-label class="settings-label">Version Info</ion-label>
+          <ion-note slot="end" class="version-note">v1.0.0</ion-note>
         </ion-item>
       </ion-list>
 
@@ -53,7 +56,6 @@ import {
   IonList, IonItem, IonLabel, IonIcon, IonToggle, IonNote
 } from '@ionic/vue';
 
-// Icons
 import { 
   moonOutline, 
   notificationsOutline, 
@@ -64,50 +66,60 @@ import {
 </script>
 
 <style scoped>
-/* Header */
-ion-toolbar {
+.minimal-toolbar {
+  --background: transparent;
+}
+.minimal-title {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.section-title {
+  padding: 24px 20px 6px 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #222222;
+  letter-spacing: -0.01em;
+}
+
+.minimal-list {
+  margin-top: 4px;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.minimal-item {
   --padding-top: 10px;
   --padding-bottom: 10px;
-  --background: var(--ion-color-light); /* Matches content background */
-}
-ion-title {
-  font-weight: 600;
-  letter-spacing: -0.5px;
+  --min-height: 56px;
 }
 
-/* Section Titles */
-.section-title {
-  padding: 24px 20px 8px;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--ion-color-medium);
-}
-
-/* Lists and Items */
-.settings-list {
-  margin-top: 0;
-  margin-bottom: 0;
-}
-ion-item {
-  --min-height: 60px;
-}
-ion-label {
-  font-size: 16px;
+.settings-label {
   font-weight: 500;
+  color: #333333;
+  font-size: 0.95rem;
 }
 
-/* Colored Icon Wrappers */
-.icon-bg {
+.settings-icon {
   font-size: 20px;
-  margin-right: 16px;
-  padding: 6px;
-  border-radius: 8px;
+  margin-right: 12px;
+  color: #444444; 
 }
-.bg-dark { background: rgba(34, 36, 40, 0.1); color: var(--ion-color-dark); }
-.bg-primary { background: rgba(56, 128, 255, 0.1); color: var(--ion-color-primary); }
-.bg-success { background: rgba(45, 211, 111, 0.1); color: var(--ion-color-success); }
-.bg-danger { background: rgba(235, 68, 90, 0.1); color: var(--ion-color-danger); }
-.bg-medium { background: rgba(146, 148, 156, 0.1); color: var(--ion-color-medium); }
+
+.danger-item {
+  --color: var(--ion-color-danger);
+}
+.danger-item .settings-icon {
+  color: var(--ion-color-danger);
+  opacity: 0.9;
+}
+.danger-item .settings-label {
+  color: var(--ion-color-danger);
+}
+
+.version-note {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #999999;
+}
 </style>
