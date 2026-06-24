@@ -34,8 +34,15 @@
                 class="minimal-checkbox"
                 color="dark"
               />
-              
-              <ion-label :class="{ done: task.done }" class="task-label">
+
+              <div v-if="task.photo" slot="start" class="task-thumbnail">
+                <ion-img :src="task.photo" alt="Task photo" />
+              </div>
+              <div v-else slot="start" class="task-thumbnail placeholder-thumbnail">
+                <ion-icon :icon="imageOutline" class="placeholder-icon" />
+              </div>
+
+              <ion-label :class="{ done: task.done }" class="task-label" text-wrap="true">
                 {{ task.name }}
               </ion-label>
             </ion-item>
@@ -113,9 +120,10 @@ import {
   IonFabButton,
   IonAlert,
   IonRouterOutlet,
+  IonImg,
 } from '@ionic/vue';
 
-import { trashOutline, addOutline, clipboardOutline } from 'ionicons/icons';
+import { trashOutline, addOutline, clipboardOutline, imageOutline } from 'ionicons/icons';
 
 const router = useRouter();
 const route = useRoute();
@@ -184,6 +192,7 @@ function goToDetail(taskId) {
   font-weight: 500;
   color: #333333;
   transition: color 0.25s ease;
+  padding-right: 8px;
 }
 
 .minimal-checkbox {
@@ -192,6 +201,57 @@ function goToDetail(taskId) {
   --border-radius: 6px;
   --border-width: 1.5px;
 }
+
+.task-thumbnail {
+  width: 60px;
+  max-width: 60px;
+  height: 60px;
+  max-height: 60px;
+  
+  margin-right: 14px;
+  border-radius: 10px;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f7f7f7;
+  flex: 0 0 44px !important; 
+}
+
+.task-thumbnail ion-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+}
+
+.task-thumbnail :deep(img) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.done ~ .task-thumbnail,
+.minimal-item:has(.done) .task-thumbnail {
+  opacity: 0.5;
+  filter: grayscale(40%);
+  transition: all 0.25s ease;
+}
+
+.placeholder-thumbnail {
+  background-color: #f0f0f2;
+  border: 1px dashed rgba(0, 0, 0, 0.1);
+  box-shadow: none;
+}
+
+.placeholder-icon {
+  font-size: 18px;
+  color: #8a8a8f;
+}
+
 .done {
   text-decoration: line-through;
   color: #aaaaaa;

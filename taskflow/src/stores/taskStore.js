@@ -16,6 +16,7 @@ export const useTaskStore = defineStore('tasks', () => {
       id: nextId.value++,
       name: name.trim(),
       done: false,
+      photo: null,
     });
   }
 
@@ -28,6 +29,16 @@ export const useTaskStore = defineStore('tasks', () => {
     tasks.value = tasks.value.filter((task) => task.id !== id);
   }
 
+  function addPhotoToTask(id, photo) {
+    const task = tasks.value.find((task) => task.id === id);
+    if (task) task.photo = photo;
+  }
+
+  function removePhotoFromTask(id) {
+    const task = tasks.value.find((task) => task.id === id);
+    if (task) task.photo = null;
+  }
+
   return {
     tasks,
     totalCount,
@@ -37,5 +48,7 @@ export const useTaskStore = defineStore('tasks', () => {
     addTask,
     toggleTask,
     removeTask,
+    addPhotoToTask,
+    removePhotoFromTask,
   };
 });
